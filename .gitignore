@@ -1,0 +1,14 @@
+# Directorio del entorno virtual de Python
+venv/
+.venv/
+
+# Archivos de compilación y caché
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de Jupyter/VS Code/IDE
+.ipynb_checkpoints/
+.vscode/
+.idea/
