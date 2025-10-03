@@ -3,3 +3,4 @@ transformers
 opencv-python
 Pillow
 matplotlib
+torch
