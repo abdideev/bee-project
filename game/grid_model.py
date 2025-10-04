@@ -1,75 +1,102 @@
 import random
 import pygame
-from game.constants import *
+import os
+from .constants import *
 
 class Celda:
     def __init__(self, fila, columna):
         self.r = fila
         self.c = columna
         self.tipo = TIPO_VACIO
+        self.en_ruta = False
+        self.imagen_original_path = None
 
 class Mundo:
     def __init__(self, N):
         self.N = N
-        self.grid = []  # La cuadrícula final (la pared)
-        # Bucle exterior para cada FILA
-        for fila_num in range(N):
-            fila_actual = []  # 1. Crea una nueva fila vacía
-            # Bucle interior para cada COLUMNA de esta fila
+        self.grid = []
+        # --- CORRECCIÓN 2: Limpiamos el __init__ ---
+        self.inicializar_grid_aleatorio()
+        self.cargar_imagenes_flores()
 
-            for col_num in range(N):
-                # 2. Crea una celda y añádela a la fila actual
+    def inicializar_grid_aleatorio(self):
+        self.grid = []
+        PROB_OBSTACULO = 0.25
+        PROB_FLOR = 0.10
+        rutas_flores = [
+            os.path.join('assets', 'objects', 'flor_1.png'),
+            os.path.join('assets', 'objects', 'flor_2.png'),
+        ]
+        for fila_num in range(self.N):
+            fila_actual = []
+            for col_num in range(self.N):
                 celda = Celda(fila_num, col_num)
-
                 valor_aleatorio = random.random()
-                if valor_aleatorio < 0.25:
+                if valor_aleatorio < PROB_OBSTACULO:
                     celda.tipo = TIPO_OBSTACULO
-                elif valor_aleatorio < 0.35:
+                elif valor_aleatorio < PROB_OBSTACULO + PROB_FLOR:
                     celda.tipo = TIPO_FLOR
-
+                    # Se le asigna un path solo si es una flor
+                    celda.imagen_original_path = random.choice(rutas_flores)
                 fila_actual.append(celda)
-            
-            # 3. Cuando la fila está llena, añádela a la cuadrícula principal
             self.grid.append(fila_actual)
 
+    def cargar_imagenes_flores(self):
+        self.imagenes_sprites_flores = {}
+        for fila in self.grid:
+            for celda in fila:
+                if celda.tipo == TIPO_FLOR and celda.imagen_original_path:
+                    path = celda.imagen_original_path
+                    if path not in self.imagenes_sprites_flores:
+                        try:
+                            img = pygame.image.load(path).convert_alpha()
+                            self.imagenes_sprites_flores[path] = pygame.transform.scale(img, (int(TAMANO_CELDA * 0.9), int(TAMANO_CELDA * 0.9)))
+                        except pygame.error as e:
+                            print(f"Error cargando imagen de flor en {path}: {e}")
+
     def seleccionar_punto(self, pos_pixel, tipo_punto):
-        # Convierte coordenadas de píxeles, valida y cambia el tipo de una celda.
         columna = pos_pixel[0] // TAMANO_CELDA
         fila = pos_pixel[1] // TAMANO_CELDA
         if 0 <= fila < self.N and 0 <= columna < self.N:
             celda = self.grid[fila][columna]
-            # Verificamos que no sea un obstáculo o una flor
-            if celda.tipo != TIPO_OBSTACULO and celda.tipo != TIPO_FLOR:
-                celda.tipo = tipo_punto 
-                return True # Devolvemos True para saber que el clic fue exitoso
-        return False # Devolvemos False para saber que el clic NO fue exitoso
+            if celda.tipo not in [TIPO_OBSTACULO, TIPO_FLOR]:
+                celda.tipo = tipo_punto
+                return True
+        return False
+    
+    def obtener_vecinos_validos(self, celda_actual):
+        vecinos = []
+        movimientos = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        r, c = celda_actual.r, celda_actual.c
+        for dr, dc in movimientos:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < self.N and 0 <= nc < self.N:
+                if self.grid[nr][nc].tipo != TIPO_OBSTACULO:
+                    vecinos.append((nr, nc))
+        return vecinos
 
-                
-    # Bucle anidado para visitar cada celda
     def dibujar(self, pantalla):
         for fila in self.grid:
             for celda in fila:
-                 # 2. Calcula la posición en píxeles
                 x = celda.c * TAMANO_CELDA
                 y = celda.r * TAMANO_CELDA
-
-                # 3. Crea el rectángulo
                 rect_celda = pygame.Rect(x, y, TAMANO_CELDA, TAMANO_CELDA)
 
-                # Dibuja el fondo y el borde
+                
                 pygame.draw.rect(pantalla, COLOR_FONDO_CELDA, rect_celda)
+                if celda.en_ruta:
+                    pygame.draw.rect(pantalla, COLOR_RUTA, rect_celda)
+
                 if celda.tipo == TIPO_OBSTACULO:
                     pygame.draw.rect(pantalla, COLOR_OBSTACULO, rect_celda)
                 elif celda.tipo == TIPO_FLOR:
-                    # Usaremos un círculo rosa simple para la flor por ahora
-                    pygame.draw.circle(pantalla, (255, 0, 255), rect_celda.center, TAMANO_CELDA // 4)
-                # --- CORRECCIÓN 2: Dibujar rectángulos para inicio y meta ---
+                    sprite = self.imagenes_sprites_flores.get(celda.imagen_original_path)
+                    if sprite:
+                        pantalla.blit(sprite, sprite.get_rect(center=rect_celda.center))
                 elif celda.tipo == TIPO_INICIO:
                     pygame.draw.rect(pantalla, COLOR_INICIO, rect_celda)
                 elif celda.tipo == TIPO_ENJAMBRE:
                     pygame.draw.rect(pantalla, COLOR_META, rect_celda)
-
-                # Dibujamos el borde al final para que siempre se vea
-                pygame.draw.rect(pantalla, COLOR_BORDE_CELDA, rect_celda, 1)
-
-
+                
+                # Asegúrate de tener COLOR_BORDE_CELDA en constants.py o usa un color
+                pygame.draw.rect(pantalla, (80, 80, 80), rect_celda, 1)
