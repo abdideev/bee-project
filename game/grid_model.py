@@ -15,7 +15,6 @@ class Mundo:
     def __init__(self, N):
         self.N = N
         self.grid = []
-        # --- CORRECCIÓN 2: Limpiamos el __init__ ---
         self.inicializar_grid_aleatorio()
         self.cargar_imagenes_flores()
 
