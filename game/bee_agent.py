@@ -19,6 +19,40 @@ class Abeja(pygame.sprite.Sprite):
         self.esta_en_movimiento = False # un interruptor para iniciar/detener el movimiento
         self.posicion_objetivo = self.rect.center # las coordenadas en píxeles de la siguiente celda a la que queremos llegar
         self.velocidad_movimiento = TAMANO_CELDA // 8 # Píxeles que se mueve por frame
+        
+        # Sistema de sonido
+        self.sonido_vuelo = None
+        self.sonido_flor = None
+        self.cargar_sonidos()
+        self.sonido_reproduciendo = False
+
+    def cargar_sonidos(self):
+        """Carga los efectos de sonido de la abeja."""
+        try:
+            # Inicializar el mixer de pygame si no está inicializado
+            if not pygame.mixer.get_init():
+                pygame.mixer.init()
+            
+            # Cargar sonido de vuelo
+            if os.path.exists(SOUND_BEE_STEP):
+                self.sonido_vuelo = pygame.mixer.Sound(SOUND_BEE_STEP)
+                self.sonido_vuelo.set_volume(0.3)  # Volumen al 30%
+                print("✓ Sonido de vuelo cargado")
+            else:
+                print(f"⚠ No se encontró el sonido de vuelo en: {SOUND_BEE_STEP}")
+            
+            # Cargar sonido de encontrar flor
+            if os.path.exists(SOUND_FLOWER_FOUND):
+                self.sonido_flor = pygame.mixer.Sound(SOUND_FLOWER_FOUND)
+                self.sonido_flor.set_volume(0.5)  # Volumen al 50%
+                print("✓ Sonido de flor cargado")
+            else:
+                print(f"⚠ No se encontró el sonido de flor en: {SOUND_FLOWER_FOUND}")
+                
+        except pygame.error as e:
+            print(f"⚠ Error cargando sonidos: {e}")
+            self.sonido_vuelo = None
+            self.sonido_flor = None
 
     def cargar_sprites_animacion(self):
         sprites = []
@@ -63,6 +97,26 @@ class Abeja(pygame.sprite.Sprite):
         self.r, self.c = self.ruta_planificada[self.paso_actual]
         self.rect.center = self.obtener_posicion_pixel(self.r, self.c)
         self.actualizar_siguiente_objetivo()
+        
+        # Iniciar sonido de vuelo
+        self.reproducir_sonido_vuelo()
+
+    def reproducir_sonido_vuelo(self):
+        """Reproduce el sonido de vuelo en loop."""
+        if self.sonido_vuelo and not self.sonido_reproduciendo:
+            self.sonido_vuelo.play(loops=-1)  # -1 = loop infinito
+            self.sonido_reproduciendo = True
+    
+    def detener_sonido_vuelo(self):
+        """Detiene el sonido de vuelo."""
+        if self.sonido_vuelo and self.sonido_reproduciendo:
+            self.sonido_vuelo.stop()
+            self.sonido_reproduciendo = False
+    
+    def reproducir_sonido_flor(self):
+        """Reproduce el sonido de encontrar una flor."""
+        if self.sonido_flor:
+            self.sonido_flor.play()
 
     def actualizar(self):
         if not self.esta_en_movimiento:
@@ -82,10 +136,16 @@ class Abeja(pygame.sprite.Sprite):
     def llegar_a_celda(self):
         """Se ejecuta cuando la abeja llega al centro de una celda."""
         self.r, self.c = self.ruta_planificada[self.paso_actual]
+        
+        # Verificar si la celda actual es una flor
+        celda_actual = self.mundo.grid[self.r][self.c]
+        if celda_actual.tipo == 'flor':
+            self.reproducir_sonido_flor()
 
         # Comprobar si hemos llegado al final de la ruta
         if self.paso_actual >= len(self.ruta_planificada) - 1:
             self.esta_en_movimiento = False
+            self.detener_sonido_vuelo()
             print("¡He llegado a la meta!")
         else:
             self.actualizar_siguiente_objetivo()

@@ -1,0 +1,130 @@
+[
+  {
+    "fecha": "2025-10-06 12:34:59",
+    "algoritmos": {
+      "BFS": {
+        "nombre": "BFS",
+        "tiempo_ejecucion": 0.0005323886871337891,
+        "tiempo_analisis_vision": 0.5950818061828613,
+        "longitud_ruta": 26,
+        "celdas_analizadas": 2,
+        "flores_detectadas": 2,
+        "no_flores": 0,
+        "score": 2,
+        "eficiencia": 7.6923076923076925,
+        "precision": 100.0,
+        "detalles_celdas": [
+          {
+            "posicion": [
+              6,
+              0
+            ],
+            "tipo_celda": "flor",
+            "es_flor_segun_vision": true,
+            "etiqueta_vision": "daisy",
+            "probabilidad": 0.9918348789215088,
+            "confianza": "alta"
+          },
+          {
+            "posicion": [
+              13,
+              1
+            ],
+            "tipo_celda": "flor",
+            "es_flor_segun_vision": true,
+            "etiqueta_vision": "daisy",
+            "probabilidad": 0.9991523027420044,
+            "confianza": "alta"
+          }
+        ],
+        "exito": true
+      },
+      "DFS": {
+        "nombre": "DFS",
+        "tiempo_ejecucion": 0.0008225440979003906,
+        "tiempo_analisis_vision": 2.072190284729004,
+        "longitud_ruta": 40,
+        "celdas_analizadas": 6,
+        "flores_detectadas": 1,
+        "no_flores": 5,
+        "score": 1,
+        "eficiencia": 2.5,
+        "precision": 16.666666666666664,
+        "detalles_celdas": [
+          {
+            "posicion": [
+              0,
+              1
+            ],
+            "tipo_celda": "flor",
+            "es_flor_segun_vision": false,
+            "etiqueta_vision": "running shoe",
+            "probabilidad": 0.29237619042396545,
+            "confianza": "baja"
+          },
+          {
+            "posicion": [
+              10,
+              5
+            ],
+            "tipo_celda": "flor",
+            "es_flor_segun_vision": false,
+            "etiqueta_vision": "running shoe",
+            "probabilidad": 0.29237619042396545,
+            "confianza": "baja"
+          },
+          {
+            "posicion": [
+              10,
+              4
+            ],
+            "tipo_celda": "flor",
+            "es_flor_segun_vision": true,
+            "etiqueta_vision": "daisy",
+            "probabilidad": 0.9918348789215088,
+            "confianza": "alta"
+          },
+          {
+            "posicion": [
+              11,
+              4
+            ],
+            "tipo_celda": "flor",
+            "es_flor_segun_vision": false,
+            "etiqueta_vision": "barrel, cask",
+            "probabilidad": 0.7095891237258911,
+            "confianza": "alta"
+          },
+          {
+            "posicion": [
+              14,
+              4
+            ],
+            "tipo_celda": "flor",
+            "es_flor_segun_vision": false,
+            "etiqueta_vision": "barrel, cask",
+            "probabilidad": 0.7095891237258911,
+            "confianza": "alta"
+          },
+          {
+            "posicion": [
+              18,
+              4
+            ],
+            "tipo_celda": "flor",
+            "es_flor_segun_vision": false,
+            "etiqueta_vision": "barrel, cask",
+            "probabilidad": 0.7095891237258911,
+            "confianza": "alta"
+          }
+        ],
+        "exito": true
+      }
+    },
+    "ganador_tiempo": "BFS",
+    "ganador_score": "BFS",
+    "ganador_eficiencia": "BFS",
+    "mejor_ruta": "BFS",
+    "analisis": "\n======================================================================\n📊 ANÁLISIS COMPARATIVO DE ALGORITMOS\n======================================================================\n\n🤖 BFS:\n  ⏱  Tiempo: 0.0005s\n  📏 Longitud de ruta: 26 pasos\n  🌸 Flores detectadas: 2\n  ❌ No-flores: 0\n  🏆 SCORE: 2\n  📊 Eficiencia: 7.69%\n  🎯 Precisión: 100.00%\n\n🤖 DFS:\n  ⏱  Tiempo: 0.0008s\n  📏 Longitud de ruta: 40 pasos\n  🌸 Flores detectadas: 1\n  ❌ No-flores: 5\n  🏆 SCORE: 1\n  📊 Eficiencia: 2.50%\n  🎯 Precisión: 16.67%\n\n======================================================================\n🏆 GANADORES POR CATEGORÍA:\n======================================================================\n⚡ Más Rápido: BFS\n🌸 Mayor Score: BFS (2 flores)\n📊 Más Eficiente: BFS\n🛤️  Mejor Ruta: BFS\n======================================================================"
+  }
+]

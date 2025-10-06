@@ -25,6 +25,8 @@ class Mundo:
         rutas_flores = [
             os.path.join('assets', 'objects', 'flor_1.png'),
             os.path.join('assets', 'objects', 'flor_2.png'),
+            os.path.join('assets', 'objects', 'lata.png'),
+            os.path.join('assets', 'objects', 'tenis.png')
         ]
         for fila_num in range(self.N):
             fila_actual = []
