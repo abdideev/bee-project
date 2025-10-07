@@ -54,12 +54,12 @@ class UIManager:
         # Líneas de estadísticas
         lineas = [
             f"⏱ Tiempo: {stats.tiempo_ejecucion:.4f}s",
-            f"📏 Longitud ruta: {stats.longitud_ruta}",
-            f"🔍 Celdas analizadas: {stats.celdas_analizadas}",
-            f"🌸 Flores: {stats.flores_detectadas_vision}",
-            f"❌ No-flores: {stats.no_flores}",
+            f"📏 Nodos explorados: {stats.longitud_ruta}",
+            f"🔍 Flores encontradas: {stats.celdas_analizadas}",
+            f"🌸 Confirmadas: {stats.flores_detectadas_vision}",
+            f"❌ No reconocidas: {stats.no_flores}",
             f"📊 Eficiencia: {stats.calcular_eficiencia():.1f}%",
-            f"🎯 Precisión: {stats.calcular_precision_deteccion():.1f}%"
+            f"🎯 Precisión VC: {stats.calcular_precision_deteccion():.1f}%"
         ]
         
         for linea in lineas:
@@ -113,12 +113,12 @@ class UIManager:
             # Estadísticas
             lineas = [
                 f"⏱ Tiempo: {stats.tiempo_ejecucion:.4f}s",
-                f"📏 Longitud: {stats.longitud_ruta} pasos",
-                f"🔍 Analizadas: {stats.celdas_analizadas}",
-                f"🌸 Flores: {stats.flores_detectadas_vision}",
-                f"❌ No-flores: {stats.no_flores}",
+                f"📏 Explorados: {stats.longitud_ruta} nodos",
+                f"🔍 Flores: {stats.celdas_analizadas}",
+                f"🌸 Confirmadas: {stats.flores_detectadas_vision}",
+                f"❌ No reconocidas: {stats.no_flores}",
                 f"📊 Eficiencia: {stats.calcular_eficiencia():.1f}%",
-                f"🎯 Precisión: {stats.calcular_precision_deteccion():.1f}%"
+                f"🎯 Precisión VC: {stats.calcular_precision_deteccion():.1f}%"
             ]
             
             for linea in lineas:
@@ -188,13 +188,13 @@ class UIManager:
         barra.blit(score_texto, (20, 8))
         
         # Información resumida
-        resumen = f"{nombre} | Tiempo: {stats.tiempo_ejecucion:.3f}s | Ruta: {stats.longitud_ruta} pasos | Flores: {stats.flores_detectadas_vision} | No-flores: {stats.no_flores}"
+        resumen = f"{nombre} | Tiempo: {stats.tiempo_ejecucion:.3f}s | Explorados: {stats.longitud_ruta} nodos | Flores: {stats.celdas_analizadas} | Confirmadas: {stats.flores_detectadas_vision}"
         
         texto = self.fuente_pequena.render(resumen, True, (150, 255, 150))
         barra.blit(texto, (20, 38))
         
         # Tercera línea
-        eficiencia = f"Eficiencia: {stats.calcular_eficiencia():.1f}% | Precisión: {stats.calcular_precision_deteccion():.1f}%"
+        eficiencia = f"No reconocidas: {stats.no_flores} | Eficiencia: {stats.calcular_eficiencia():.1f}% | Precisión VC: {stats.calcular_precision_deteccion():.1f}%"
         texto2 = self.fuente_pequena.render(eficiencia, True, (200, 200, 200))
         barra.blit(texto2, (20, 53))
         

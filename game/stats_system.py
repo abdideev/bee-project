@@ -74,14 +74,14 @@ class EstadisticasAlgoritmo:
         """Genera un resumen en texto del análisis."""
         lineas = []
         lineas.append(f"\n{'='*50}")
-        lineas.append(f"📊 ESTADÍSTICAS: {self.nombre}")
+        lineas.append(f"📊 ESTADÍSTICAS: {self.nombre} (Sin Información)")
         lineas.append(f"{'='*50}")
-        lineas.append(f"✓ Ruta encontrada: {'SÍ' if self.exito else 'NO'}")
+        lineas.append(f"✓ Meta encontrada: {'SÍ' if self.exito else 'NO'}")
         lineas.append(f"⏱  Tiempo búsqueda: {self.tiempo_ejecucion:.4f}s")
         lineas.append(f"🔍 Tiempo análisis VC: {self.tiempo_analisis_vision:.4f}s")
-        lineas.append(f"📏 Longitud de ruta: {self.longitud_ruta} pasos")
-        lineas.append(f"\n🎯 ANÁLISIS DE FLORES EN LA RUTA:")
-        lineas.append(f"  • Flores analizadas: {self.celdas_analizadas}")
+        lineas.append(f"📏 Nodos explorados: {self.longitud_ruta}")
+        lineas.append(f"\n🎯 ANÁLISIS DE FLORES EN LA EXPLORACIÓN:")
+        lineas.append(f"  • Flores encontradas: {self.celdas_analizadas}")
         lineas.append(f"  • 🌸 Flores confirmadas (VC): {self.flores_detectadas_vision}")
         lineas.append(f"  • ❌ Imágenes no reconocidas: {self.no_flores}")
         lineas.append(f"  • 🏆 SCORE: {self.calcular_score()}")
@@ -107,7 +107,7 @@ class EstadisticasAlgoritmo:
                     lineas.append(f"  ✗ ({pos[0]},{pos[1]}) - {etiqueta} (confianza: {prob:.2%})")
         
         lineas.append(f"\n📈 MÉTRICAS:")
-        lineas.append(f"  • Eficiencia: {self.calcular_eficiencia():.2f}% (flores/ruta)")
+        lineas.append(f"  • Eficiencia: {self.calcular_eficiencia():.2f}% (flores/exploración)")
         lineas.append(f"  • Precisión VC: {self.calcular_precision_deteccion():.2f}%")
         lineas.append(f"{'='*50}")
         
