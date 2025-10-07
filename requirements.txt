@@ -4,9 +4,9 @@ opencv-python
 Pillow
 matplotlib
 torch
-pygame==2.5.2
-opencv-python==4.8.1.78
-numpy==1.24.3
-transformers==4.35.0
-torch==2.1.0
-pillow==10.1.0
+pygame
+opencv-python
+numpy
+transformers
+torch
+pillow
