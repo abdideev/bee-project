@@ -100,7 +100,7 @@ class VisionSystem:
                 # Palabras clave para identificar flores
                 palabras_clave_flores = [
                     'flower', 'daisy', 'rose', 'sunflower', 'tulip',
-                    'plant', 'petal', 'blossom', 'bloom', 'orchid'
+                    'plant', 'petal', 'blossom', 'bloom', 'orchid', 'vase'
                 ]
 
             

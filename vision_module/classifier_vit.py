@@ -30,7 +30,7 @@ def clasificar_objeto(imagen_mejorada):
             probabilidad = results[0]['score']
             
             # Lógica para determinar si es una flor
-            palabras_clave_flores = ['flower', 'daisy', 'rose', 'sunflower', 'plant']
+            palabras_clave_flores = ['flower', 'daisy', 'rose', 'sunflower', 'plant', 'vase']
             es_flor = any(palabra in etiqueta for palabra in palabras_clave_flores)
             
             return etiqueta, probabilidad, es_flor
