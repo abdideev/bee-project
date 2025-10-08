@@ -94,7 +94,7 @@ class UIManager:
         # Temporizador si la abeja está activa
         if agente_abeja:
             tiempo_abeja = agente_abeja.obtener_tiempo_transcurrido()
-            tiempo_texto = self.fuente_texto.render(f"⏱ Tiempo Recorrido: {tiempo_abeja:.2f}s", True, (100, 255, 255))
+            tiempo_texto = self.fuente_texto.render(f"Tiempo Recorrido: {tiempo_abeja:.2f}s", True, (100, 255, 255))
             panel.blit(tiempo_texto, (20, y_offset))
             y_offset += 30
         
@@ -108,7 +108,7 @@ class UIManager:
             color = colores_algoritmos.get(nombre, (200, 200, 200))
             
             # Título del algoritmo
-            texto_algo = self.fuente_texto.render(f"━━ {nombre} ━━", True, color)
+            texto_algo = self.fuente_texto.render(f"{nombre}", True, color)
             panel.blit(texto_algo, (20, y_offset))
             y_offset += 25
             
@@ -119,13 +119,13 @@ class UIManager:
             
             # Estadísticas
             lineas = [
-                f"⏱ Búsqueda: {stats.tiempo_ejecucion:.4f}s",
-                f"📏 Explorados: {stats.longitud_ruta} nodos",
-                f"🔍 Flores: {stats.celdas_analizadas}",
-                f"🌸 Confirmadas: {stats.flores_detectadas_vision}",
-                f"❌ No reconocidas: {stats.no_flores}",
-                f"📊 Eficiencia: {stats.calcular_eficiencia():.1f}%",
-                f"🎯 Precisión VC: {stats.calcular_precision_deteccion():.1f}%"
+                f"Búsqueda: {stats.tiempo_ejecucion:.4f}s",
+                f"Explorados: {stats.longitud_ruta} nodos",
+                f"Flores: {stats.celdas_analizadas}",
+                f"Confirmadas: {stats.flores_detectadas_vision}",
+                f"No reconocidas: {stats.no_flores}",
+                f"Eficiencia: {stats.calcular_eficiencia():.1f}%",
+                f"Precisión VC: {stats.calcular_precision_deteccion():.1f}%"
             ]
             
             for linea in lineas:
@@ -148,10 +148,10 @@ class UIManager:
             y_offset += 30
             
             ganadores = [
-                f"⚡ Más Rápido: {comparacion['ganador_tiempo']}",
-                f"🏆 Mayor Score: {comparacion['ganador_score']}",
-                f"📊 Eficiente: {comparacion['ganador_eficiencia']}",
-                f"🛤️ Mejor Ruta: {comparacion['mejor_ruta']}"
+                f"Más Rápido: {comparacion['ganador_tiempo']}",
+                f"Mayor Score: {comparacion['ganador_score']}",
+                f"Eficiente: {comparacion['ganador_eficiencia']}",
+                f"Mejor Ruta: {comparacion['mejor_ruta']}"
             ]
             
             for ganador in ganadores:
@@ -191,13 +191,13 @@ class UIManager:
         y_barra = self.alto - altura_barra
         
         # SCORE destacado
-        score_texto = self.fuente_titulo.render(f"🏆 SCORE: {stats.calcular_score()}", True, (255, 215, 0))
+        score_texto = self.fuente_titulo.render(f"SCORE: {stats.calcular_score()}", True, (255, 215, 0))
         barra.blit(score_texto, (20, 8))
         
         # Temporizador si la abeja está activa
         if agente_abeja:
             tiempo_abeja = agente_abeja.obtener_tiempo_transcurrido()
-            tiempo_texto = self.fuente_texto.render(f"⏱ Tiempo: {tiempo_abeja:.2f}s", True, (100, 255, 255))
+            tiempo_texto = self.fuente_texto.render(f"Tiempo: {tiempo_abeja:.2f}s", True, (100, 255, 255))
             barra.blit(tiempo_texto, (self.ancho - 200, 8))
         
         # Información resumida
