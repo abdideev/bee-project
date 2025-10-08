@@ -1,5 +1,6 @@
 import pygame
 import os
+import time
 from game.constants import *
 
 class Abeja(pygame.sprite.Sprite):
@@ -25,6 +26,11 @@ class Abeja(pygame.sprite.Sprite):
         self.sonido_flor = None
         self.cargar_sonidos()
         self.sonido_reproduciendo = False
+        
+        # Temporizador
+        self.tiempo_inicio = 0
+        self.tiempo_actual = 0
+        self.tiempo_llegada = 0
 
     def cargar_sonidos(self):
         """Carga los efectos de sonido de la abeja."""
@@ -81,24 +87,42 @@ class Abeja(pygame.sprite.Sprite):
             self.esta_en_movimiento = False
             return
         
-        # 1. Limpiamos cualquier ruta anterior
+        # 1. Limpiamos cualquier ruta anterior y marcas en_ruta
         for fila in self.mundo.grid:
             for celda in fila:
                 celda.en_ruta = False
 
-        # 2. Marcar las celdas de la nueva ruta
+        # 2. Filtrar la ruta para ELIMINAR obstáculos
+        ruta_filtrada = []
         for r, c in ruta:
-            self.mundo.grid[r][c].en_ruta = True
-            
-        self.ruta_planificada = ruta
+            celda = self.mundo.grid[r][c]
+            # SOLO agregar si NO es obstáculo
+            if celda.tipo != TIPO_OBSTACULO:
+                ruta_filtrada.append((r, c))
+            else:
+                print(f"⚠ Advertencia: Se intentó pasar por obstáculo en ({r},{c}), saltando...")
+        
+        if not ruta_filtrada:
+            print("❌ Error: La ruta está bloqueada por obstáculos")
+            self.esta_en_movimiento = False
+            return
+        
+        # 3. Usar la ruta filtrada
+        self.ruta_planificada = ruta_filtrada
         self.paso_actual = 0
         self.esta_en_movimiento = True
-        # Asegurarse de que la abeja comience en el primer punto de la ruta
+        
+        # 4. Asegurarse de que la abeja comience en el primer punto de la ruta
         self.r, self.c = self.ruta_planificada[self.paso_actual]
         self.rect.center = self.obtener_posicion_pixel(self.r, self.c)
         self.actualizar_siguiente_objetivo()
         
-        # Iniciar sonido de vuelo
+        # 5. Iniciar temporizador
+        self.tiempo_inicio = time.time()
+        self.tiempo_actual = 0
+        self.tiempo_llegada = 0
+        
+        # 6. Iniciar sonido de vuelo
         self.reproducir_sonido_vuelo()
 
     def reproducir_sonido_vuelo(self):
@@ -117,10 +141,21 @@ class Abeja(pygame.sprite.Sprite):
         """Reproduce el sonido de encontrar una flor."""
         if self.sonido_flor:
             self.sonido_flor.play()
+    
+    def obtener_tiempo_transcurrido(self):
+        """Obtiene el tiempo transcurrido desde que empezó a moverse."""
+        if self.tiempo_llegada > 0:
+            return self.tiempo_llegada
+        elif self.esta_en_movimiento:
+            return time.time() - self.tiempo_inicio
+        return 0
 
     def actualizar(self):
         if not self.esta_en_movimiento:
             return 
+        
+        # Actualizar temporizador
+        self.tiempo_actual = time.time() - self.tiempo_inicio
         
         self.animar_sprite()
         self.mover_hacia_objetivo()
@@ -137,8 +172,11 @@ class Abeja(pygame.sprite.Sprite):
         """Se ejecuta cuando la abeja llega al centro de una celda."""
         self.r, self.c = self.ruta_planificada[self.paso_actual]
         
-        # Verificar si la celda actual es una flor
+        # Marcar la celda como parte de la ruta recorrida
         celda_actual = self.mundo.grid[self.r][self.c]
+        celda_actual.en_ruta = True
+        
+        # Verificar si la celda actual es una flor
         if celda_actual.tipo == 'flor':
             self.reproducir_sonido_flor()
 
@@ -146,7 +184,8 @@ class Abeja(pygame.sprite.Sprite):
         if self.paso_actual >= len(self.ruta_planificada) - 1:
             self.esta_en_movimiento = False
             self.detener_sonido_vuelo()
-            print("¡He llegado a la meta!")
+            self.tiempo_llegada = time.time() - self.tiempo_inicio
+            print(f"¡He llegado a la meta en {self.tiempo_llegada:.2f} segundos!")
         else:
             self.actualizar_siguiente_objetivo()
 

@@ -137,7 +137,6 @@ class Juego:
         
         if ruta_bfs:
             self.comparador.agregar_estadistica("BFS", stats_bfs)
-            print(f"✓ BFS completado: Score {stats_bfs.calcular_score()}")
             print(stats_bfs.obtener_resumen_texto())
         
         # Ejecutar DFS
@@ -155,7 +154,6 @@ class Juego:
         
         if ruta_dfs:
             self.comparador.agregar_estadistica("DFS", stats_dfs)
-            print(f"✓ DFS completado: Score {stats_dfs.calcular_score()}")
             print(stats_dfs.obtener_resumen_texto())
         
         # Realizar comparación
@@ -259,14 +257,15 @@ class Juego:
         
         # 4. Panel de comparación si está activo
         if self.mostrar_panel_comparacion and len(self.comparador.estadisticas) > 0:
-            self.ui_manager.dibujar_panel_comparacion(self.pantalla, self.comparador)
+            self.ui_manager.dibujar_panel_comparacion(self.pantalla, self.comparador, self.agente_abeja)
         
         # 5. Resumen simple si hay estadísticas actuales
         elif self.estadisticas_actuales and not self.mostrar_panel_comparacion:
             self.ui_manager.dibujar_resumen_simple(
                 self.pantalla, 
                 self.estadisticas_actuales, 
-                self.ultimo_algoritmo_ejecutado
+                self.ultimo_algoritmo_ejecutado,
+                self.agente_abeja
             )
 
         # 6. Actualiza toda la pantalla

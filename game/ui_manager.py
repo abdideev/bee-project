@@ -69,13 +69,13 @@ class UIManager:
         
         return offset_y
     
-    def dibujar_panel_comparacion(self, pantalla, comparador):
+    def dibujar_panel_comparacion(self, pantalla, comparador, agente_abeja=None):
         """Dibuja un panel con la comparación de algoritmos."""
         if not comparador or len(comparador.estadisticas) == 0:
             return
         
         # Crear superficie para el panel
-        ancho_panel = 350
+        ancho_panel = 380
         alto_panel = self.alto
         panel = pygame.Surface((ancho_panel, alto_panel))
         panel.set_alpha(240)
@@ -89,7 +89,14 @@ class UIManager:
         # Título principal
         titulo = self.fuente_titulo.render("COMPARACIÓN", True, (255, 200, 0))
         panel.blit(titulo, (ancho_panel // 2 - titulo.get_width() // 2, y_offset))
-        y_offset += 40
+        y_offset += 35
+        
+        # Temporizador si la abeja está activa
+        if agente_abeja:
+            tiempo_abeja = agente_abeja.obtener_tiempo_transcurrido()
+            tiempo_texto = self.fuente_texto.render(f"⏱ Tiempo Recorrido: {tiempo_abeja:.2f}s", True, (100, 255, 255))
+            panel.blit(tiempo_texto, (20, y_offset))
+            y_offset += 30
         
         # Dibujar estadísticas de cada algoritmo
         colores_algoritmos = {
@@ -112,7 +119,7 @@ class UIManager:
             
             # Estadísticas
             lineas = [
-                f"⏱ Tiempo: {stats.tiempo_ejecucion:.4f}s",
+                f"⏱ Búsqueda: {stats.tiempo_ejecucion:.4f}s",
                 f"📏 Explorados: {stats.longitud_ruta} nodos",
                 f"🔍 Flores: {stats.celdas_analizadas}",
                 f"🌸 Confirmadas: {stats.flores_detectadas_vision}",
@@ -170,13 +177,13 @@ class UIManager:
         # Dibujar el panel en la pantalla
         pantalla.blit(panel, (self.ancho - ancho_panel, 0))
     
-    def dibujar_resumen_simple(self, pantalla, stats, nombre):
+    def dibujar_resumen_simple(self, pantalla, stats, nombre, agente_abeja=None):
         """Dibuja un resumen simple en la parte inferior de la pantalla."""
         if not stats:
             return
         
         # Crear barra inferior
-        altura_barra = 70
+        altura_barra = 90
         barra = pygame.Surface((self.ancho, altura_barra))
         barra.set_alpha(220)
         barra.fill((25, 25, 35))
@@ -187,16 +194,27 @@ class UIManager:
         score_texto = self.fuente_titulo.render(f"🏆 SCORE: {stats.calcular_score()}", True, (255, 215, 0))
         barra.blit(score_texto, (20, 8))
         
+        # Temporizador si la abeja está activa
+        if agente_abeja:
+            tiempo_abeja = agente_abeja.obtener_tiempo_transcurrido()
+            tiempo_texto = self.fuente_texto.render(f"⏱ Tiempo: {tiempo_abeja:.2f}s", True, (100, 255, 255))
+            barra.blit(tiempo_texto, (self.ancho - 200, 8))
+        
         # Información resumida
-        resumen = f"{nombre} | Tiempo: {stats.tiempo_ejecucion:.3f}s | Explorados: {stats.longitud_ruta} nodos | Flores: {stats.celdas_analizadas} | Confirmadas: {stats.flores_detectadas_vision}"
+        resumen = f"{nombre} | Búsqueda: {stats.tiempo_ejecucion:.3f}s | Explorados: {stats.longitud_ruta} nodos | Flores: {stats.flores_detectadas_vision}"
         
         texto = self.fuente_pequena.render(resumen, True, (150, 255, 150))
-        barra.blit(texto, (20, 38))
+        barra.blit(texto, (20, 42))
         
         # Tercera línea
-        eficiencia = f"No reconocidas: {stats.no_flores} | Eficiencia: {stats.calcular_eficiencia():.1f}% | Precisión VC: {stats.calcular_precision_deteccion():.1f}%"
-        texto2 = self.fuente_pequena.render(eficiencia, True, (200, 200, 200))
-        barra.blit(texto2, (20, 53))
+        detalle = f"Confirmadas: {stats.flores_detectadas_vision} | No reconocidas: {stats.no_flores}"
+        texto2 = self.fuente_pequena.render(detalle, True, (200, 200, 200))
+        barra.blit(texto2, (20, 58))
+        
+        # Cuarta línea
+        eficiencia = f"Eficiencia: {stats.calcular_eficiencia():.1f}% | Precisión VC: {stats.calcular_precision_deteccion():.1f}%"
+        texto3 = self.fuente_pequena.render(eficiencia, True, (200, 200, 200))
+        barra.blit(texto3, (20, 74))
         
         pantalla.blit(barra, (0, y_barra))
     
