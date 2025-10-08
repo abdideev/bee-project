@@ -13,13 +13,13 @@ class Juego:
         pygame.init()
 
         self.pantalla = pygame.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
-        pygame.display.set_caption("Proyecto Abeja Buscadora (IA + Visión por Computadora)")
+        pygame.display.set_caption("🐝 Abeja Buscadora - Algoritmos de Búsqueda + IA")
         self.mundo = Mundo(TAMANO_N)
         self.estado_seleccion = 'inicio'
         self.agente_abeja = None
         self.reloj = pygame.time.Clock()
         
-        # Nuevos sistemas
+        # Sistemas
         self.sistema_vision = VisionSystem()
         self.comparador = ComparadorAlgoritmos()
         self.ui_manager = UIManager(ANCHO_PANTALLA, ALTO_PANTALLA)
@@ -30,45 +30,71 @@ class Juego:
         self.ultimo_algoritmo_ejecutado = None
         self.estadisticas_actuales = None
         
-        print("=" * 60)
+        # Contador de tiempo en ejecución
+        self.tiempo_inicio_movimiento = None
+        self.tiempo_total_movimiento = 0.0
+        self.movimiento_completado = False
+        
+        self.imprimir_instrucciones()
+    
+    def imprimir_instrucciones(self):
+        """Imprime las instrucciones del juego en la consola."""
+        print("\n" + "="*70)
         print("🐝 PROYECTO ABEJA BUSCADORA")
-        print("=" * 60)
-        print("Instrucciones:")
-        print("  1. Click para seleccionar INICIO (verde)")
-        print("  2. Click para seleccionar META/ENJAMBRE (rojo)")
-        print("  3. Presiona '1' para ejecutar BFS")
-        print("  4. Presiona '2' para ejecutar DFS")
-        print("  5. Presiona '3' para ejecutar AMBOS y comparar")
-        print("  6. Presiona 'TAB' para mostrar/ocultar panel")
-        print("  7. Presiona 'S' para guardar resultados")
-        print("  8. Presiona 'R' para reiniciar")
-        print("=" * 60)
+        print("   Algoritmos de Búsqueda Sin Información + Visión por Computadora")
+        print("="*70)
+        print("\n📋 INSTRUCCIONES:")
+        print("-"*70)
+        print("1️⃣  Click izquierdo → Seleccionar INICIO (verde)")
+        print("2️⃣  Click izquierdo → Seleccionar META (rojo)")
+        print("3️⃣  Presiona '1' → Ejecutar BFS (Breadth-First Search)")
+        print("4️⃣  Presiona '2' → Ejecutar DFS (Depth-First Search)")
+        print("5️⃣  Presiona '3' → Ejecutar AMBOS y COMPARAR")
+        print("6️⃣  Presiona 'TAB' → Mostrar/Ocultar panel de estadísticas")
+        print("7️⃣  Presiona 'S' → Guardar resultados en JSON")
+        print("8️⃣  Presiona 'R' → Reiniciar juego")
+        print("9️⃣  Presiona 'V' → Ver reporte del grid")
+        print("🔟  Presiona 'ESC' → Salir")
+        print("-"*70)
+        print("\n💡 CONCEPTOS:")
+        print("   • BFS: Explora nivel por nivel, garantiza camino MÁS CORTO")
+        print("   • DFS: Explora en profundidad, NO garantiza camino óptimo")
+        print("   • Ambos NO atraviesan obstáculos (celdas negras)")
+        print("   • La abeja analiza flores con ViT (Vision Transformer)")
+        print("="*70 + "\n")
     
     def ejecutar_busqueda(self, algoritmo_func, nombre_estrategia):
         """
         Ejecuta un algoritmo de búsqueda con análisis de visión completo.
         """
         # Obtener coordenadas de inicio y meta
-        inicio = None
-        meta = None
-        for fila in self.mundo.grid:
-            for celda in fila:
-                if celda.tipo == TIPO_INICIO: 
-                    inicio = (celda.r, celda.c)
-                elif celda.tipo == TIPO_ENJAMBRE: 
-                    meta = (celda.r, celda.c)
+        inicio = self.mundo.obtener_inicio()
+        meta = self.mundo.obtener_meta()
         
-        if inicio and meta and self.agente_abeja:
-            print(f"\n{'='*60}")
-            print(f"🔍 Ejecutando {nombre_estrategia}...")
-            print(f"{'='*60}")
-            
-            # Mostrar mensaje de carga
-            self.ui_manager.dibujar_mensaje_cargando(
-                self.pantalla, 
-                f"Ejecutando {nombre_estrategia}..."
-            )
-            
+        if not inicio or not meta:
+            print("❌ ERROR: Debes seleccionar inicio y meta primero.")
+            return
+        
+        if not self.agente_abeja:
+            print("❌ ERROR: No se ha inicializado el agente abeja.")
+            return
+        
+        print(f"\n{'═'*70}")
+        print(f"🚀 Iniciando {nombre_estrategia}...")
+        print(f"{'═'*70}")
+        
+        # Limpiar ruta anterior
+        self.mundo.limpiar_ruta()
+        self.movimiento_completado = False
+        self.tiempo_total_movimiento = 0.0
+        
+        # Mostrar mensaje de carga
+        self.ui_manager.dibujar_mensaje_cargando(
+            self.pantalla, 
+            f"🔍 Ejecutando {nombre_estrategia}..."
+        )
+        
+        try:
             # Ejecutar búsqueda con análisis completo
             ruta, estadisticas = ejecutar_busqueda_con_analisis(
                 algoritmo=algoritmo_func,
@@ -81,11 +107,12 @@ class Juego:
                 tamano_celda=TAMANO_CELDA
             )
             
-            if ruta:
-                print(estadisticas.obtener_resumen_texto())
-                
+            if ruta and len(ruta) > 0:
                 # Asignar ruta a la abeja
                 self.agente_abeja.asignar_ruta(ruta)
+                
+                # Iniciar contador de tiempo
+                self.tiempo_inicio_movimiento = pygame.time.get_ticks() / 1000.0
                 
                 # Guardar estadísticas
                 self.estadisticas_actuales = estadisticas
@@ -93,68 +120,87 @@ class Juego:
                 
                 # Agregar al comparador
                 self.comparador.agregar_estadistica(nombre_estrategia, estadisticas)
+                
+                print(f"\n✅ {nombre_estrategia} completado exitosamente")
+                print(f"   La abeja comenzará a moverse...")
             else:
-                print("✗ ERROR: No se encontró una ruta.")
+                print(f"\n❌ ERROR: No se encontró una ruta válida.")
                 self.estadisticas_actuales = None
-        else:
-            print("✗ ERROR: Debes seleccionar inicio y meta primero.")
+                
+        except Exception as e:
+            print(f"\n❌ ERROR durante la ejecución: {e}")
+            import traceback
+            traceback.print_exc()
+            self.estadisticas_actuales = None
     
     def ejecutar_comparacion(self):
         """Ejecuta ambos algoritmos y realiza una comparación completa."""
-        print(f"\n{'='*60}")
+        print(f"\n{'═'*70}")
         print("📊 MODO COMPARACIÓN: Ejecutando BFS y DFS")
-        print(f"{'='*60}")
+        print(f"{'═'*70}")
         
         # Limpiar estadísticas anteriores
         self.comparador.limpiar()
         
         # Obtener coordenadas
-        inicio = None
-        meta = None
-        for fila in self.mundo.grid:
-            for celda in fila:
-                if celda.tipo == TIPO_INICIO: 
-                    inicio = (celda.r, celda.c)
-                elif celda.tipo == TIPO_ENJAMBRE: 
-                    meta = (celda.r, celda.c)
+        inicio = self.mundo.obtener_inicio()
+        meta = self.mundo.obtener_meta()
         
         if not inicio or not meta:
-            print("✗ ERROR: Debes seleccionar inicio y meta primero.")
+            print("❌ ERROR: Debes seleccionar inicio y meta primero.")
             return
         
         # Ejecutar BFS
-        self.ui_manager.dibujar_mensaje_cargando(self.pantalla, "Ejecutando BFS...")
-        ruta_bfs, stats_bfs = ejecutar_busqueda_con_analisis(
-            algoritmo=bfs_panal,
-            nombre="BFS",
-            mundo=self.mundo,
-            inicio=inicio,
-            meta=meta,
-            sistema_vision=self.sistema_vision,
-            pantalla=self.pantalla,
-            tamano_celda=TAMANO_CELDA
-        )
+        print("\n" + "-"*70)
+        print("🔹 Ejecutando BFS...")
+        print("-"*70)
         
-        if ruta_bfs:
-            self.comparador.agregar_estadistica("BFS", stats_bfs)
-            print(stats_bfs.obtener_resumen_texto())
+        self.ui_manager.dibujar_mensaje_cargando(self.pantalla, "🔍 Ejecutando BFS...")
+        
+        try:
+            ruta_bfs, stats_bfs = ejecutar_busqueda_con_analisis(
+                algoritmo=bfs_panal,
+                nombre="BFS",
+                mundo=self.mundo,
+                inicio=inicio,
+                meta=meta,
+                sistema_vision=self.sistema_vision,
+                pantalla=self.pantalla,
+                tamano_celda=TAMANO_CELDA
+            )
+            
+            if ruta_bfs and len(ruta_bfs) > 0:
+                self.comparador.agregar_estadistica("BFS", stats_bfs)
+                print(f"✅ BFS completado - Score: {stats_bfs.calcular_score()}")
+        except Exception as e:
+            print(f"❌ Error en BFS: {e}")
+            ruta_bfs = []
         
         # Ejecutar DFS
-        self.ui_manager.dibujar_mensaje_cargando(self.pantalla, "Ejecutando DFS...")
-        ruta_dfs, stats_dfs = ejecutar_busqueda_con_analisis(
-            algoritmo=dfs_panal,
-            nombre="DFS",
-            mundo=self.mundo,
-            inicio=inicio,
-            meta=meta,
-            sistema_vision=self.sistema_vision,
-            pantalla=self.pantalla,
-            tamano_celda=TAMANO_CELDA
-        )
+        print("\n" + "-"*70)
+        print("🔹 Ejecutando DFS...")
+        print("-"*70)
         
-        if ruta_dfs:
-            self.comparador.agregar_estadistica("DFS", stats_dfs)
-            print(stats_dfs.obtener_resumen_texto())
+        self.ui_manager.dibujar_mensaje_cargando(self.pantalla, "🔍 Ejecutando DFS...")
+        
+        try:
+            ruta_dfs, stats_dfs = ejecutar_busqueda_con_analisis(
+                algoritmo=dfs_panal,
+                nombre="DFS",
+                mundo=self.mundo,
+                inicio=inicio,
+                meta=meta,
+                sistema_vision=self.sistema_vision,
+                pantalla=self.pantalla,
+                tamano_celda=TAMANO_CELDA
+            )
+            
+            if ruta_dfs and len(ruta_dfs) > 0:
+                self.comparador.agregar_estadistica("DFS", stats_dfs)
+                print(f"✅ DFS completado - Score: {stats_dfs.calcular_score()}")
+        except Exception as e:
+            print(f"❌ Error en DFS: {e}")
+            ruta_dfs = []
         
         # Realizar comparación
         if len(self.comparador.estadisticas) >= 2:
@@ -166,20 +212,51 @@ class Juego:
             # Mostrar panel de comparación
             self.mostrar_panel_comparacion = True
             
-            # Usar la ruta del algoritmo con mayor score
-            mejor_algoritmo = comparacion['ganador_score']
-            if mejor_algoritmo == "BFS":
+            # Usar la ruta del algoritmo con menor longitud (BFS debería ser óptimo)
+            mejor_algoritmo = comparacion['ganadores']['mejor_ruta']
+            
+            if mejor_algoritmo == "BFS" and ruta_bfs:
                 self.agente_abeja.asignar_ruta(ruta_bfs)
                 self.estadisticas_actuales = stats_bfs
-            else:
+                self.ultimo_algoritmo_ejecutado = "BFS"
+            elif ruta_dfs:
                 self.agente_abeja.asignar_ruta(ruta_dfs)
                 self.estadisticas_actuales = stats_dfs
+                self.ultimo_algoritmo_ejecutado = "DFS"
             
-            print(f"\n🏆 Usando ruta de: {mejor_algoritmo} (Mayor score)")
+            # Iniciar contador de tiempo
+            self.tiempo_inicio_movimiento = pygame.time.get_ticks() / 1000.0
+            self.movimiento_completado = False
+            
+            print(f"\n🏆 Usando ruta de: {mejor_algoritmo}")
+            print(f"   La abeja comenzará a moverse...")
+        else:
+            print("\n⚠️  No se pudieron ejecutar ambos algoritmos para comparar")
+    
+    def ver_reporte_grid(self):
+        """Muestra un reporte detallado del grid."""
+        try:
+            from core.grid_validator import generar_reporte_grid
+            generar_reporte_grid(self.mundo)
+        except ImportError:
+            # Si no existe el módulo, mostrar estadísticas básicas
+            stats = self.mundo.obtener_estadisticas()
+            print("\n" + "="*70)
+            print("📊 ESTADÍSTICAS DEL GRID")
+            print("="*70)
+            print(f"Tamaño: {stats['tamano']}x{stats['tamano']}")
+            print(f"Total de celdas: {stats['total_celdas']}")
+            print(f"Vacías: {stats['vacias']} ({100-stats['porcentaje_obstaculos']-stats['porcentaje_flores']:.1f}%)")
+            print(f"Obstáculos: {stats['obstaculos']} ({stats['porcentaje_obstaculos']:.1f}%)")
+            print(f"Flores: {stats['flores']} ({stats['porcentaje_flores']:.1f}%)")
+            print("="*70 + "\n")
     
     def reiniciar(self):
-        """Reinicia el juego."""
-        print("\n🔄 Reiniciando juego...")
+        """Reinicia el juego completamente."""
+        print("\n" + "="*70)
+        print("🔄 REINICIANDO JUEGO...")
+        print("="*70)
+        
         self.mundo = Mundo(TAMANO_N)
         self.estado_seleccion = 'inicio'
         self.agente_abeja = None
@@ -187,11 +264,18 @@ class Juego:
         self.sistema_vision.limpiar_cache()
         self.mostrar_panel_comparacion = False
         self.estadisticas_actuales = None
-        print("✓ Juego reiniciado")
+        self.tiempo_inicio_movimiento = None
+        self.tiempo_total_movimiento = 0.0
+        self.movimiento_completado = False
+        
+        print("✅ Juego reiniciado exitosamente\n")
 
     def run(self):
+        """Loop principal del juego."""
         juego_en_marcha = True
+        
         while juego_en_marcha:
+            # Procesar eventos
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
                     juego_en_marcha = False
@@ -204,14 +288,18 @@ class Juego:
                         if self.mundo.seleccionar_punto(evento.pos, TIPO_INICIO):
                             self.agente_abeja = Abeja(self.mundo, (fila, col))
                             self.estado_seleccion = 'meta'
-                            print("✓ Inicio seleccionado")
+                            print("✅ Punto de INICIO seleccionado en ({}, {})".format(fila, col))
 
                     elif self.estado_seleccion == 'meta':
                         if self.mundo.seleccionar_punto(evento.pos, TIPO_ENJAMBRE):
                             self.estado_seleccion = 'listo'
-                            print("✓ Meta seleccionada")
+                            fila = evento.pos[1] // TAMANO_CELDA
+                            col = evento.pos[0] // TAMANO_CELDA
+                            print("✅ Punto de META seleccionado en ({}, {})".format(fila, col))
+                            print("\n💡 Ahora presiona 1, 2 o 3 para ejecutar algoritmos\n")
 
                 if evento.type == pygame.KEYDOWN:
+                    # Algoritmos (solo si está listo)
                     if self.estado_seleccion == 'listo':
                         if evento.key == pygame.K_1:  # BFS
                             self.ejecutar_busqueda(bfs_panal, "BFS")
@@ -223,36 +311,71 @@ class Juego:
                     # Controles globales
                     if evento.key == pygame.K_TAB:
                         self.mostrar_panel_comparacion = not self.mostrar_panel_comparacion
-                        print(f"Panel comparación: {'Visible' if self.mostrar_panel_comparacion else 'Oculto'}")
+                        estado = "Visible" if self.mostrar_panel_comparacion else "Oculto"
+                        print(f"🔄 Panel de comparación: {estado}")
                     
                     elif evento.key == pygame.K_s:
                         if len(self.comparador.estadisticas) > 0:
                             self.comparador.guardar_comparacion()
                         else:
-                            print("⚠ No hay estadísticas para guardar")
+                            print("⚠️  No hay estadísticas para guardar")
                     
                     elif evento.key == pygame.K_r:
                         self.reiniciar()
+                    
+                    elif evento.key == pygame.K_v:
+                        self.ver_reporte_grid()
+                    
+                    elif evento.key == pygame.K_ESCAPE:
+                        juego_en_marcha = False
 
-            # Actualizar y dibujar
+            # Actualizar
             self.actualizar()
+            
+            # Dibujar
             self.dibujar()
+            
+            # Controlar FPS
             self.reloj.tick(FPS)
+        
+        print("\n" + "="*70)
+        print("👋 ¡Gracias por usar Abeja Buscadora!")
+        print("="*70 + "\n")
 
     def actualizar(self):
         """Actualiza el estado de todos los objetos del juego."""
         if self.agente_abeja:
+            # Guardar estado anterior
+            estaba_en_movimiento = self.agente_abeja.esta_en_movimiento
+            
+            # Actualizar abeja
             self.agente_abeja.actualizar()
+            
+            # Detectar cuando termina el movimiento
+            if estaba_en_movimiento and not self.agente_abeja.esta_en_movimiento:
+                if not self.movimiento_completado:
+                    self.movimiento_completado = True
+                    if self.tiempo_inicio_movimiento is not None:
+                        self.tiempo_total_movimiento = (pygame.time.get_ticks() / 1000.0) - self.tiempo_inicio_movimiento
+                        
+                        print(f"\n{'='*70}")
+                        print(f"🎯 ¡LA ABEJA HA LLEGADO A LA META!")
+                        print(f"{'='*70}")
+                        print(f"⏱️  Tiempo de llegada: {self.tiempo_total_movimiento:.2f} segundos")
+                        print(f"📏 Distancia recorrida: {self.estadisticas_actuales.longitud_ruta if self.estadisticas_actuales else 'N/A'} pasos")
+                        print(f"🏆 Score obtenido: {self.estadisticas_actuales.calcular_score() if self.estadisticas_actuales else 0} flores")
+                        print(f"{'='*70}\n")
 
     def dibujar(self):
-        # 1. Dibuja el mundo
+        """Dibuja todos los elementos del juego."""
+        # 1. Dibujar el mundo
         self.mundo.dibujar(self.pantalla)
 
-        # 2. Dibuja la abeja si existe
+        # 2. Dibujar la abeja
         if self.agente_abeja:
             self.agente_abeja.dibujar(self.pantalla)
 
-        # 3. Dibuja UI
+        # 3. Dibujar UI
         self.ui_manager.dibujar_instrucciones(self.pantalla, self.estado_seleccion)
         
         # 4. Panel de comparación si está activo
@@ -267,12 +390,59 @@ class Juego:
                 self.ultimo_algoritmo_ejecutado,
                 self.agente_abeja
             )
+        
+        # 6. Mostrar tiempo de movimiento si está en progreso
+        if self.agente_abeja and self.agente_abeja.esta_en_movimiento:
+            if self.tiempo_inicio_movimiento is not None:
+                tiempo_transcurrido = (pygame.time.get_ticks() / 1000.0) - self.tiempo_inicio_movimiento
+                self.dibujar_contador_tiempo(tiempo_transcurrido)
 
-        # 6. Actualiza toda la pantalla
+        # 7. Actualizar pantalla
         pygame.display.flip()
+    
+    def dibujar_contador_tiempo(self, tiempo):
+        """
+        Dibuja un contador de tiempo en la esquina superior derecha.
+        
+        Args:
+            tiempo: Tiempo transcurrido en segundos
+        """
+        # Crear superficie semi-transparente
+        ancho_contador = 200
+        alto_contador = 50
+        superficie = pygame.Surface((ancho_contador, alto_contador))
+        superficie.set_alpha(230)
+        superficie.fill((30, 30, 40))
+        
+        # Borde
+        pygame.draw.rect(superficie, (100, 200, 255), superficie.get_rect(), 3)
+        
+        # Texto del contador
+        fuente_titulo = pygame.font.Font(None, 20)
+        fuente_tiempo = pygame.font.Font(None, 32)
+        
+        titulo = fuente_titulo.render("⏱️ TIEMPO", True, (200, 200, 200))
+        texto_tiempo = fuente_tiempo.render(f"{tiempo:.2f}s", True, (100, 255, 100))
+        
+        # Centrar textos
+        superficie.blit(titulo, (ancho_contador // 2 - titulo.get_width() // 2, 5))
+        superficie.blit(texto_tiempo, (ancho_contador // 2 - texto_tiempo.get_width() // 2, 22))
+        
+        # Posicionar en esquina superior derecha
+        x = ANCHO_PANTALLA - ancho_contador - 10
+        y = 40
+        
+        self.pantalla.blit(superficie, (x, y))
+
 
 if __name__ == "__main__":
-    juego = Juego()
-    juego.run()
-    pygame.quit()
-    sys.exit()
+    try:
+        juego = Juego()
+        juego.run()
+    except Exception as e:
+        print(f"\n❌ ERROR CRÍTICO: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        pygame.quit()
+        sys.exit()
